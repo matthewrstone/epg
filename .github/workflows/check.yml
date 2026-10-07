@@ -45,12 +45,24 @@ jobs:
       - name: Install dependencies
         if: steps.files.outputs.any_changed == 'true'
         run: npm install --ignore-scripts
+      # File names come from the PR, so they're passed via env (never interpolated into the
+      # script) and split into an array, so they can't be executed or glob-expanded
       - name: Check changed js-files
         if: steps.files.outputs.js_any_changed == 'true'
-        run: npx eslint ${{ steps.files.outputs.js_all_changed_files }}
+        env:
+          FILES: ${{ steps.files.outputs.js_all_changed_files }}
+        run: |
+          read -r -a files <<< "$FILES"
+          npx eslint "${files[@]}"
+      - name: Type check
+        if: steps.files.outputs.js_any_changed == 'true'
+        run: npm run typecheck
       - name: Check changed *.channels.xml files
         if: steps.files.outputs.channels_any_changed == 'true'
+        env:
+          FILES: ${{ steps.files.outputs.channels_all_changed_files }}
         run: |
+          read -r -a files <<< "$FILES"
           npm run postinstall
-          npm run channels:lint -- ${{ steps.files.outputs.channels_all_changed_files }}
-          npm run channels:validate -- ${{ steps.files.outputs.channels_all_changed_files }}
+          npm run channels:lint -- "${files[@]}"
+          npm run channels:validate -- "${files[@]}"

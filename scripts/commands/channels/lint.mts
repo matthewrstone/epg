@@ -82,6 +82,7 @@ async function main() {
       if (found) {
         const colIndex = found.index || 0
         localErrors.push({
+          level: 2,
           line: lineIndex + 1,
           col: colIndex + 1,
           message: 'Single quotes cannot be used in attributes'

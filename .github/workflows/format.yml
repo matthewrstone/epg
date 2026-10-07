@@ -40,9 +40,13 @@ jobs:
           echo "channels_any_changed=$CHANNELS_ANY_CHANGED" >> "$GITHUB_OUTPUT"
       - name: Check changed *.channels.xml files
         if: steps.files.outputs.channels_any_changed == 'true'
+        # Passed via env (never interpolated into the script) so file names can't be executed
+        env:
+          FILES: ${{ steps.files.outputs.channels_all_changed_files }}
         run: |
-          npm run channels:lint -- ${{ steps.files.outputs.channels_all_changed_files }}
-          npm run channels:validate -- ${{ steps.files.outputs.channels_all_changed_files }}
+          read -r -a files <<< "$FILES"
+          npm run channels:lint -- "${files[@]}"
+          npm run channels:validate -- "${files[@]}"
       - name: Setup git
         run: |
           git config user.name "iptv-bot[bot]"
