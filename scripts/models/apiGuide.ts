@@ -29,7 +29,7 @@ export class ApiGuide {
     this.sources = data.sources || []
   }
 
-  addSource(source: ApiGuideSource): this {
+  addSource(source: WorkerGuideSource): this {
     this.sources.push(source)
 
     return this

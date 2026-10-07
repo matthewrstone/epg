@@ -106,7 +106,7 @@ async function main() {
     if (!guideXml) continue
 
     const parsedGuide = epgParser.parse(guideXml)
-    worker.lastUpdated = parsedGuide.date
+    worker.lastUpdated = parsedGuide.date ?? undefined
 
     worker.setStatus('OK')
   }

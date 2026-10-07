@@ -128,13 +128,16 @@ async function main() {
   if (typeof options.maxConnections === 'number')
     globalConfig.maxConnections = options.maxConnections
   if (typeof options.curl === 'boolean') globalConfig.curl = options.curl
-  if (typeof options.gzip === 'boolean' || typeof options.gzip === 'string')
-    globalConfig.gzip = options.gzip
-  if (typeof options.json === 'boolean' || typeof options.json === 'string')
-    globalConfig.json = options.json
   if (typeof options.debug === 'boolean') globalConfig.debug = options.debug
 
-  logger.debug(`config: ${JSON.stringify(globalConfig, getCircularReplacer(), 2)}`)
+  // gzip/json accept a path as well as a flag, which epg-grabber's SiteConfig can't express,
+  // and they only affect our own output step, so they're kept out of the grabber config
+  const gzip = options.gzip || defaultConfig.gzip
+  const json = options.json || defaultConfig.json
+
+  logger.debug(
+    `config: ${JSON.stringify({ ...globalConfig, gzip, json }, getCircularReplacer(), 2)}`
+  )
 
   const grabber =
     process.env.NODE_ENV === 'test'
@@ -319,9 +322,6 @@ async function main() {
       return pathTemplate.format({ lang, site: program.site || '' })
     })
 
-  const gzip = globalConfig.gzip || defaultConfig.gzip
-  const json = globalConfig.json || defaultConfig.json
-
   for (const groupKey of channelsGroupedByKey.keys()) {
     const groupChannels = new Collection(channelsGroupedByKey.get(groupKey))
     const groupPrograms = new Collection(programsGroupedByKey.get(groupKey))
@@ -360,7 +360,7 @@ function getLogoForChannel(channel: Channel): string | null {
 
 function getCircularReplacer() {
   const seen = new WeakSet()
-  return (key: string, value: any) => {
+  return (key: string, value: unknown) => {
     if (typeof value === 'object' && value !== null) {
       if (seen.has(value)) {
         return '[Circular]'

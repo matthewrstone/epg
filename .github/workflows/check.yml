@@ -54,6 +54,9 @@ jobs:
         run: |
           read -r -a files <<< "$FILES"
           npx eslint "${files[@]}"
+      - name: Type check
+        if: steps.files.outputs.js_any_changed == 'true'
+        run: npm run typecheck
       - name: Check changed *.channels.xml files
         if: steps.files.outputs.channels_any_changed == 'true'
         env:
